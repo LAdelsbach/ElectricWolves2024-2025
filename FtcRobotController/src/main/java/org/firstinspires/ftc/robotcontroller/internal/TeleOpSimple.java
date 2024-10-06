@@ -2,6 +2,8 @@ package org.firstinspires.ftc.robotcontroller.internal;
 
 import org.firstinspires.ftc.robotcontroller.internal.subsystems.Claw;
 import org.firstinspires.ftc.robotcontroller.internal.subsystems.Drivetrain;
+import org.firstinspires.ftc.robotcontroller.internal.subsystems.Elbow;
+import org.firstinspires.ftc.robotcontroller.internal.subsystems.LinearRail;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,8 +23,11 @@ public class TeleOpSimple extends OpMode{
     DcMotor linear_arm;
     Servo claw_left;
     Servo claw_right;
-    Claw cl;
+    Servo elbow_servo;
+    Claw claw;
     Drivetrain drivetrain;
+    Elbow elbow;
+    LinearRail linear_rail;
     public TeleOpSimple(){
         super();
     }
@@ -36,19 +41,23 @@ public class TeleOpSimple extends OpMode{
 
         claw_left = hardwareMap.get(Servo.class, "cl_left");
         claw_right = hardwareMap.get(Servo.class, "cl_right");
+        elbow_servo = hardwareMap.get(Servo.class, "elbow");
 
+        linear_arm = hardwareMap.dcMotor.get("la");
 
-        //the following code is used to set the initial directions of the motors.
-        //normally, the motors on the left should be set to Direction.REVERSE,
-        //but testing should resolve any issues with motor directions.
+        //TODO: check these ones to see if they need to be switched
         motor_fl.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_fr.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_bl.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_br.setDirection(DcMotorSimple.Direction.REVERSE);
-        //TODO: check these bottom ones to see if they need to be switched
 
-        cl = new Claw(claw_left, claw_right);
+        linear_arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        linear_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        claw = new Claw(claw_left, claw_right);
         drivetrain = new Drivetrain(motor_fl, motor_fr, motor_bl, motor_br);
+        elbow = new Elbow(elbow_servo);
+        LinearRail linear_rail = new LinearRail(linear_arm);
 
 
 
@@ -79,29 +88,33 @@ public class TeleOpSimple extends OpMode{
 
     }
     public void game_specific(){
-        
+        //Control of the claw
+        if(gamepad2.a){
+            claw.cl_close();
+            elbow.slight_up(); //only time claw is closing is if something is being picked up
+        }
+        else if(gamepad2.y){
+            claw.cl_open();
+        }
+        else if(Math.abs(gamepad2.right_stick_y) > 0.05){
+            claw.increment(gamepad2.right_stick_y);
+        }
+        if(gamepad2.dpad_down){
+            elbow.down();
+        }
+        else if(gamepad2.dpad_up){
+            elbow.up();
+        }
+        linear_rail.drive(gamepad2.left_stick_y);
+
     }
 
     public void report_telemetry() {
-
-        //Drive Motors Power STatus
-
-
-
         telemetry.addData("Front Left", motor_fl.getPower());
         telemetry.addData("Front Right", motor_fr.getPower());
         telemetry.addData("Back Left", motor_bl.getPower());
         telemetry.addData("Back Right", motor_br.getPower());
-
-
         telemetry.update();
     }
-    private void resetMotors() {
-        motor_fl.setPower(0.0);
-        motor_fr.setPower(0.0);
-        motor_bl.setPower(0.0);
-        motor_br.setPower(0.0);
-    }
-
 }
 

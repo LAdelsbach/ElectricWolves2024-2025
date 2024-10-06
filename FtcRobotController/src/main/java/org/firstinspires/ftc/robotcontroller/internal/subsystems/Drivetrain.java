@@ -26,4 +26,10 @@ public class Drivetrain {
         fr.setPower(frontRightPower);
         br.setPower(backRightPower);
     }
+    private void resetMotors() {
+        fl.setPower(0.0);
+        fr.setPower(0.0);
+        bl.setPower(0.0);
+        br.setPower(0.0);
+    }
 }
