@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.robotcontroller.internal;
 
+import org.firstinspires.ftc.robotcontroller.internal.subsystems.Claw;
+import org.firstinspires.ftc.robotcontroller.internal.subsystems.Drivetrain;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
+
 
 
 @TeleOp(name = "TeleOp_Simple", group = "Iterative Opmode")
@@ -17,9 +21,8 @@ public class TeleOpSimple extends OpMode{
     DcMotor linear_arm;
     Servo claw_left;
     Servo claw_right;
-
-
-
+    Claw cl;
+    Drivetrain drivetrain;
     public TeleOpSimple(){
         super();
     }
@@ -34,6 +37,7 @@ public class TeleOpSimple extends OpMode{
         claw_left = hardwareMap.get(Servo.class, "cl_left");
         claw_right = hardwareMap.get(Servo.class, "cl_right");
 
+
         //the following code is used to set the initial directions of the motors.
         //normally, the motors on the left should be set to Direction.REVERSE,
         //but testing should resolve any issues with motor directions.
@@ -43,6 +47,11 @@ public class TeleOpSimple extends OpMode{
         motor_br.setDirection(DcMotorSimple.Direction.REVERSE);
         //TODO: check these bottom ones to see if they need to be switched
 
+        cl = new Claw(claw_left, claw_right);
+        drivetrain = new Drivetrain(motor_fl, motor_fr, motor_bl, motor_br);
+
+
+
         //taking out a line of code that says hang.setDirection(DcMotorSimple.Direction.FORWARD);
         //hang.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -50,43 +59,30 @@ public class TeleOpSimple extends OpMode{
     }
 
     public void loop() {
-        controlRobot();
-        reportTelemetry();
+        control_robot();
+        report_telemetry();
     }
-    private void controlRobot() {
+    private void control_robot() {
         movement();
-        //TODO: Make this turn on and off using right bumber
+        game_specific();
     }
     private void movement(){
 
         if(!gamepad1.a) {
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            double x = gamepad1.left_stick_x; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
 
-            // Denominator is the largest motor power (absolute value) or 1
-            // This ensures all the powers maintain the same ratio,
-            // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y - x - rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
-
-            motor_fl.setPower(frontLeftPower);
-            motor_bl.setPower(backLeftPower);
-            motor_fr.setPower(frontRightPower);
-            motor_br.setPower(backRightPower);
+            drivetrain.drive(x,y,rx, 1.1);
         }
 
 
     }
+    public void game_specific(){
+        
+    }
 
-
-
-    //TODO: set the right home position
-
-    public void reportTelemetry() {
+    public void report_telemetry() {
 
         //Drive Motors Power STatus
 
