@@ -11,8 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
-
 @TeleOp(name = "TeleOp_Simple", group = "Iterative Opmode")
 
 public class TeleOpSimple extends OpMode{
@@ -50,6 +48,9 @@ public class TeleOpSimple extends OpMode{
         motor_fr.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_bl.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_br.setDirection(DcMotorSimple.Direction.REVERSE);
+        //TODO: check these, remember that these have to be flipped from one another
+        claw_left.setDirection(Servo.Direction.FORWARD);
+        claw_right.setDirection(Servo.Direction.REVERSE);
 
         linear_arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         linear_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -57,13 +58,8 @@ public class TeleOpSimple extends OpMode{
         claw = new Claw(claw_left, claw_right);
         drivetrain = new Drivetrain(motor_fl, motor_fr, motor_bl, motor_br);
         elbow = new Elbow(elbow_servo);
+
         LinearRail linear_rail = new LinearRail(linear_arm);
-
-
-
-        //taking out a line of code that says hang.setDirection(DcMotorSimple.Direction.FORWARD);
-        //hang.setDirection(DcMotorSimple.Direction.FORWARD);
-
 
     }
 
@@ -76,15 +72,17 @@ public class TeleOpSimple extends OpMode{
         game_specific();
     }
     private void movement(){
-
-        if(!gamepad1.a) {
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
+        double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+        double x = gamepad1.left_stick_x; // Counteract imperfect strafing
+        double rx = gamepad1.right_stick_x;
+        //This if statement is just because sometimes the controller is slightly triggered
+        //In that case, if not purposefull, you do not want to go at 95% speed for no reason
+        if(gamepad1.right_trigger < 0.05) {
             drivetrain.drive(x,y,rx, 1.1);
         }
-
-
+        else{
+            drivetrain.drive(x,y,rx,1.1, (1-gamepad1.right_trigger));
+        }
     }
     public void game_specific(){
         //Control of the claw
@@ -105,7 +103,6 @@ public class TeleOpSimple extends OpMode{
             elbow.up();
         }
         linear_rail.drive(gamepad2.left_stick_y);
-
     }
 
     public void report_telemetry() {
@@ -116,4 +113,3 @@ public class TeleOpSimple extends OpMode{
         telemetry.update();
     }
 }
-
