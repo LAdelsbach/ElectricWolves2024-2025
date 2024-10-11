@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.robotcontroller.internal;
+package org.firstinspires.ftc.teamcode;
 
-import org.firstinspires.ftc.robotcontroller.internal.subsystems.Claw;
-import org.firstinspires.ftc.robotcontroller.internal.subsystems.Drivetrain;
-import org.firstinspires.ftc.robotcontroller.internal.subsystems.Elbow;
-import org.firstinspires.ftc.robotcontroller.internal.subsystems.LinearRail;
+import org.firstinspires.ftc.teamcode.subsystems.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.Elbow;
+import org.firstinspires.ftc.teamcode.subsystems.LinearRail;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
