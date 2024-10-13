@@ -12,7 +12,7 @@ public class Claw {
     }
     //TODO: GIVE MIN_POSITION A VALUE
     public int cl_open(){
-        pos = 150;
+        pos = 15;
         cl_left.setPosition(pos);
         cl_right.setPosition(pos);
         return pos;
@@ -43,5 +43,4 @@ public class Claw {
         cl_left.setPosition(i);
         cl_right.setPosition(i);
     }
-
 }

@@ -21,11 +21,14 @@ public class TeleOpSimple extends OpMode{
     DcMotor linear_arm;
     Servo claw_left;
     Servo claw_right;
-    Servo elbow_servo;
     Claw claw;
     Drivetrain drivetrain;
-    Elbow elbow;
     LinearRail linear_rail;
+    Servo elbow;
+
+    double pos;
+    double max = 0.45;
+    double min = 5;
     public TeleOpSimple(){
         super();
     }
@@ -36,33 +39,28 @@ public class TeleOpSimple extends OpMode{
         motor_fr = hardwareMap.dcMotor.get("FR");
         motor_bl = hardwareMap.dcMotor.get("BL");
         motor_br = hardwareMap.dcMotor.get("BR");
+        linear_arm = hardwareMap.dcMotor.get("la");
 
         claw_left = hardwareMap.get(Servo.class, "cl_left");
         claw_right = hardwareMap.get(Servo.class, "cl_right");
-        elbow_servo = hardwareMap.get(Servo.class, "elbow");
+        elbow = hardwareMap.get(Servo.class, "elbow");
 
-        linear_arm = hardwareMap.dcMotor.get("la");
 
-        //TODO: check these ones to see if they need to be switched
-        motor_fl.setDirection(DcMotorSimple.Direction.FORWARD);
-        motor_fr.setDirection(DcMotorSimple.Direction.REVERSE);
-        motor_bl.setDirection(DcMotorSimple.Direction.FORWARD);
-        motor_br.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_fr.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor_bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_br.setDirection(DcMotorSimple.Direction.FORWARD);
+
         //TODO: check these, remember that these have to be flipped from one another
+
         claw_left.setDirection(Servo.Direction.FORWARD);
         claw_right.setDirection(Servo.Direction.REVERSE);
+        linear_arm.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        linear_arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        linear_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        claw = new Claw(claw_left, claw_right);
         drivetrain = new Drivetrain(motor_fl, motor_fr, motor_bl, motor_br);
-        elbow = new Elbow(elbow_servo);
-
-        LinearRail linear_rail = new LinearRail(linear_arm);
+        pos = elbow.getPosition();
 
     }
-
     public void loop() {
         control_robot();
         report_telemetry();
@@ -84,25 +82,50 @@ public class TeleOpSimple extends OpMode{
             drivetrain.drive(x,y,rx,1.1, (1-gamepad1.right_trigger));
         }
     }
-    public void game_specific(){
+    public void game_specific() {
+        //linear_rail.drive(gamepad2.left_stick_y);
+        linear_arm.setPower(gamepad2.left_stick_y);
         //Control of the claw
-        if(gamepad2.a){
-            claw.cl_close();
-            elbow.slight_up(); //only time claw is closing is if something is being picked up
+        if (gamepad1.a) {
+            double pos = 0;
+            claw_left.setPosition(pos);
+            claw_right.setPosition(pos);
+            //elbow.slight_up(); //only time claw is closing is if something is being picked up
+        } else if (gamepad1.y) {
+            double pos = 0.25;
+            claw_left.setPosition(pos);
+            claw_right.setPosition(pos);
+        } else if (Math.abs(gamepad2.right_stick_y) > 0.05) {
+            double i = gamepad2.right_stick_y / 90;
+            double pos = claw_left.getPosition();
+            if (i + pos <= 0.25 && i + pos >= 0) {
+                pos += i;
+            } else if (pos >= 0) {
+                pos = 0.25;
+            } else {
+                pos = 0;
+            }
+            claw_left.setPosition(pos);
+            claw_right.setPosition(pos);
+            //x claw.increment(gamepad2.right_stick_y);
         }
-        else if(gamepad2.y){
-            claw.cl_open();
+        if (gamepad2.dpad_down) {
+            pos = 0;
+            elbow.setPosition(pos);
+        } else if (gamepad2.dpad_up) {
+            pos = max;
+            elbow.setPosition(max);
+        } else if (gamepad2.dpad_left) {
+            pos = min + 0.10;
+            elbow.setPosition(pos);
+        } else {
+            double i = (gamepad2.right_trigger - gamepad2.left_trigger) / 10;
+            pos = elbow.getPosition();
+            if (pos + i > 0 && pos + i < max) {
+                pos += i;
+                elbow.setPosition(pos);
+            }
         }
-        else if(Math.abs(gamepad2.right_stick_y) > 0.05){
-            claw.increment(gamepad2.right_stick_y);
-        }
-        if(gamepad2.dpad_down){
-            elbow.down();
-        }
-        else if(gamepad2.dpad_up){
-            elbow.up();
-        }
-        linear_rail.drive(gamepad2.left_stick_y);
     }
 
     public void report_telemetry() {
