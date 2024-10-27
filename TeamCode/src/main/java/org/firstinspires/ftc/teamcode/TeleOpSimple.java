@@ -76,10 +76,10 @@ public class TeleOpSimple extends OpMode{
         //This if statement is just because sometimes the controller is slightly triggered
         //In that case, if not purposefull, you do not want to go at 95% speed for no reason
         if(gamepad1.right_trigger < 0.05) {
-            drivetrain.drive(x,y,rx, 1.1);
+            drivetrain.drive(x,y,rx, 1.1, false);
         }
         else{
-            drivetrain.drive(x,y,rx,1.1, (1-gamepad1.right_trigger));
+            drivetrain.drive(x,y,rx,1.1, (true));
         }
     }
     public void game_specific() {
